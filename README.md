@@ -11,3 +11,5 @@ ghci:
 `:doc` -- Mostra a documentacao de algo
 
 `:hg` -- Pesquisa no Hoogle
+
+Usar `{-# OPTIONS_GHC -Wall #-}` no inicio dos arquivos

@@ -1,6 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use foldr" #-} -- Ignorar dica de foldr em `sumDigits`
 
--- sumDigits :: [Integer] -> [Integer]
+validate :: Integer -> Bool
+validate n = sumDigits (doubleEveryOther (toDigits n)) `mod` 10 == 0
+
+sumDigits :: [Integer] -> Integer
+sumDigits []       = 0
+sumDigits (x : xs) = sum (toDigits x) + sumDigits xs
 
 doubleEveryOther :: [Integer] -> [Integer]
 doubleEveryOther xs = reverse (doubleOther (reverse xs))
@@ -15,5 +22,5 @@ toDigits n = reverse (toDigitsRev n)
 
 toDigitsRev :: Integer -> [Integer]
 toDigitsRev n
-    | n > 0     = (n `mod` 10) : toDigitsRev (n `div` 10)
+    | n > 0 = (n `mod` 10) : toDigitsRev (n `div` 10)
     | otherwise = []

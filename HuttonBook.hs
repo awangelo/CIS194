@@ -193,8 +193,8 @@ sumdown 0 = 0
 sumdown n = n + sumdown (n-1)
 
 (^^^) :: (Num a, Integral b) => a -> b -> a
-(^^^) x 1 = x
-(^^^) x y = x * x ^^^ (y-1)
+(^^^) x 0 = 1
+(^^^) x y = x * (x ^^^ (y-1))
 
 euclid :: Int -> Int -> Int
 euclid x 0 = x
@@ -204,21 +204,21 @@ euclid x y | x > y     = euclid (x-y) y
 
 
 and' :: [Bool] -> Bool
-and' [True]  = True
-and' [False] = False
-and' (x:ys)  = x && and' ys
+and' []     = True
+and' (x:ys) = x && and' ys
 
 concat' :: [[a]] -> [a]
 concat' []     = []
 concat' (x:xs) = x ++ concat' xs
 
 replicatee :: Int -> a -> [a]
-replicatee 1 x = [x]
-replicatee n x = x : replicatee (n-1) x
+replicatee n x
+  | n <= 0    = []
+  | otherwise = x : replicatee (n - 1) x
 
 (!!!) :: [a] -> Int -> a
 (!!!) (x:_) 0  = x
-(!!!) (x:xs) n = (!!!) xs (n-1)
+(!!!) (_:xs) n = xs !!! (n-1)
 -- if lenth xs > n-1...
 
 elem' :: Eq a => a -> [a] -> Bool
@@ -226,3 +226,32 @@ elem' _ [] = False
 elem' e (x:xs)
     | e == x    = True
     | otherwise = elem' e xs
+
+merge' :: Ord a => [a] -> [a] -> [a]
+merge' xs []    = xs
+merge' [] ys    = ys
+merge' xs'@(x:xs) ys'@(y:ys)
+    | x > y     = y : merge' xs' ys
+    | otherwise = x : merge' xs ys'
+
+msort :: Ord a => [a] -> [a]
+msort []       = []
+msort [x]      = [x]
+msort xs = merge' (msort frst) (msort scnd)
+    where frst = take mid xs
+          scnd = drop mid xs
+          mid  = length xs `div` 2
+
+summ :: Num a => [a] -> a
+summ []     = 0
+summ (x:xs) = x + summ xs
+
+takee :: Integral a => a -> [b] -> [b]
+takee n _
+    | n <= 0   = []
+takee _ []     = []
+takee n (x:xs) = x : takee (n-1) xs
+
+last' :: [a] -> a
+last' [x]    = x
+last' (_:xs) = last' xs

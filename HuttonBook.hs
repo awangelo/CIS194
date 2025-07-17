@@ -57,7 +57,7 @@ double x = x*2
 palindrome :: Eq a => [a] -> Bool
 palindrome xs = reverse xs == xs
 
-const = \x _ -> x
+-- const = \x _ -> x
 
 
 odds :: Int -> [Int]
@@ -255,3 +255,123 @@ takee n (x:xs) = x : takee (n-1) xs
 last' :: [a] -> a
 last' [x]    = x
 last' (_:xs) = last' xs
+
+
+
+
+
+
+
+-- 1 : (2 : (3 : []))
+-- para
+-- 1 f (2 f (3 f v ))
+foldr'' :: (a -> b -> b) -> b -> [a] -> b
+foldr'' f v []     = v
+foldr'' f v (x:xs) = f x (foldr'' f v xs)
+
+
+-- 1 : (2 : (3 : []))
+-- para
+-- 1 * (2 * (3 * 1 ))
+vezes :: [Int] -> Int
+vezes = foldr (*) 1
+
+
+-- 1 : (2 : (3 : []))
+-- x = ignorar
+-- x 1+ (x 1+ (x 1+ 0))
+tamanho :: [a] -> Int
+-- tamanho = foldr (+ 1) 0
+-- `(+1) :: Int -> Int`, mas foldr espera uma funcao :: (a -> Int -> Int).
+-- Entao falta ignorar o primeiro argumento `a`:
+tamanho = foldr (\_ -> (+ 1)) 0
+-- Ou usar      (const (+ 1))
+
+
+-- 1 : (2 : (3 : []))
+-- `λ` faz swap de `x λ y` para `y : x`
+-- step by step:
+-- 1 λ (2 λ (3 λ []))
+-- 2 λ (3 λ [] ++ [1])
+-- 3 λ [] ++ [2] ++ [1]
+-- [] ++ [3] ++ [2] ++ [1]
+reverso :: [a] -> [a]
+reverso = foldr (\x xs -> xs ++ [x]) []
+-- `\x xs -> xs ++ [x]` eh igual a `snoc x xs = xs ++ [x]`, contrario de cons `:`
+
+
+-- 1 : (2 : (3 : []))
+-- para
+-- (([] : 3) : 2) : 1
+-- ((v f 3) f 2) f 1
+-- ou
+-- f (f (f v 1) 2) 3
+foldl'' :: (a -> b -> a) -> a -> [b] -> a
+foldl'' f v []     = v
+foldl'' f v (x:xs) = foldl'' f (f v x) xs
+-- Nao funciona para listas infinitas (geralmente),
+-- Pois percorre a lista da esquerda para a direita, começando pelo primeiro elemento
+
+-- Sao iguais se a funcao `f` for associativa:
+-- foldr (+) 0 [1..5]
+-- foldl (+) 0 [1..5]
+
+-- 1 : (2 : (3 : []))
+-- para
+-- foldr: 1 + (2 + (3 + 0))
+--
+-- foldl: ((0 + 1) + 2) + 3
+
+-- 1 : (2 : (3 : []))
+-- x = ignorar
+-- ((0 +1 x) +1 x) +1 x
+tamanhol :: [a] -> Int
+tamanhol = foldl (\x _ -> x + 1) 0
+
+
+-- 1 : (2 : (3 : []))
+-- para
+-- f (f (f v 1) 2) 3
+-- : (: (: [] 1) 2) 3
+-- : (: (: 1 []) 2) 3
+-- : (: 2 (: 1 [])) 3
+-- : 3 (: 2 (: 1 []))
+-- : 3 (: (2 : (1 : [])))
+
+reversel :: [a] -> [a]
+reversel = foldl (\xs x -> x : xs) []
+-- Ou apenas    `(flip (:))` para inverter os argumentos do cons
+
+
+-- False1 : (False2 : (False3 : (False4 : [])))
+-- para
+
+-- foldr: False1 && (False2 && (False3 && (False4 && True)))
+--        -- começa pelo primeiro elemento (False1) e aninha à direita até o acumulador True
+--        -- resultado: False assim que encontra o primeiro False
+andr :: [Bool] -> Bool
+andr = foldr (&&) True
+
+-- foldl: (((True && False1) && False2) && False3) && False4
+--        -- começa pelo acumulador True e vai aplicando da esquerda (False1) para a direita (False4)
+--        -- resultado: False assim que encontra o primeiro False
+andl :: [Bool] -> Bool
+andl = foldl (&&) True
+
+
+-- REGRA GERAL:
+-- * Use foldr para transformar listas em outras listas, especialmente se a lista pode ser infinita.
+--   - foldr permite short-circuit (parar cedo), útil para funções como (&&), (||), etc.
+--   - foldr funciona bem com listas infinitas.
+--
+-- * Use foldl' para listas grandes e finitas.
+--   - foldl' reverte a ordem implicitamente (foldl' (flip (:)) [] == reverse).
+--   - Melhor uso quando a função é associativa/comutativa (+, *, Set.union).
+--   - Não pode short-circuitar, sempre percorre toda a lista.
+--
+-- * foldl é raramente recomendado; geralmente prefira foldl'.
+--
+--
+-- Resumo:
+-- - foldr: listas infinitas, short-circuit, mantém ordem.
+-- - foldl': listas grandes e finitas, performance, computa pela ordem reversa.
